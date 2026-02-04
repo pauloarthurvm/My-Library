@@ -1,12 +1,10 @@
 package com.pv.mylibrary.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "books")
-@AllArgsConstructor
 @NoArgsConstructor
 public class BookEntity {
 
@@ -32,4 +30,5 @@ public class BookEntity {
     public void setTitle(String title) {
         this.title = title;
     }
+
 }
