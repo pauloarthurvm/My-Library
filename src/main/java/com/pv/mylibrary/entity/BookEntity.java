@@ -15,6 +15,13 @@ public class BookEntity {
     @Column(name = "title", nullable = false)
     private String title;
 
+    @ManyToOne
+    @JoinColumn(name = "publisher_id", nullable = false)
+    private PublisherEntity publisherEntity;
+
+//    @Column(name = "publisher_id", nullable = false)
+//    private Long publisherId;
+
     public Long getId() {
         return id;
     }
@@ -29,6 +36,14 @@ public class BookEntity {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public PublisherEntity getPublisherEntity() {
+        return publisherEntity;
+    }
+
+    public void setPublisherEntity(PublisherEntity publisherEntity) {
+        this.publisherEntity = publisherEntity;
     }
 
 }

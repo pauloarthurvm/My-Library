@@ -27,8 +27,11 @@ public class BookController {
 
     @PostMapping
     public ResponseEntity<BookDto> insertBookSave(@RequestBody BookDto bookDto) {
-        BookDto bookDtoSaved = bookService.insertNewBook(bookDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(bookDtoSaved);
+        Optional<BookDto> bookDtoSavedOpt = bookService.insertNewBook(bookDto);
+        if(bookDtoSavedOpt.isPresent()) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(bookDtoSavedOpt.get());
+        }
+        return ResponseEntity.badRequest().build();
     }
 
     @PutMapping()
