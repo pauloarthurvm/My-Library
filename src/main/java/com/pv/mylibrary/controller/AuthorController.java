@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/authors")
@@ -26,6 +27,15 @@ public class AuthorController {
     @PostMapping
     public ResponseEntity<AuthorDto> insertNewAuthor(@RequestBody AuthorDto authorDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authorService.insertNewAuthor(authorDto));
+    }
+
+    @PutMapping
+    public ResponseEntity<AuthorDto> updateAuthor(@RequestBody AuthorDto authorDto) {
+        Optional<AuthorDto> authorDtoUpdated = authorService.updateAuthor(authorDto);
+        if(authorDtoUpdated.isPresent()) {
+            return ResponseEntity.ok(authorDtoUpdated.get());
+        }
+        return ResponseEntity.notFound().build();
     }
 
 }
