@@ -31,14 +31,32 @@ create table if not exists authors(
 alter table if exists books
     add column publisher_id bigint;
 
-update books
-    set publisher_id = 2;
+-- Use the following command if you already have books created and need to set a publisher_id for it
+-- update books
+--     set publisher_id = 2;
 
 alter table if exists books
     alter publisher_id set NOT null;
 
-alter table if exists books
+alter table if exists books(
     add constraint book_fk_publisher_id
     foreign key (publisher_id)
     references publishers (id)
-    on delete restrict;
+    on delete restrict);
+
+-- Create a "Many to Many" relationship
+-- Called "Associative (junction) table" in SQL context
+-- A book may have many authors
+-- An author may write many book
+-- Need to create another table that references both Primary Keys
+-- A Primary Key is made of a pair that can not be duplicated
+
+create table if not exists books_authors(
+    book_id 	BIGINT not null,
+    author_id 	BIGINT not null,
+    primary key (book_id, author_id),
+    constraint fk_book_id foreign key (book_id) references books (id)
+        on delete cascade,
+    constraint fk_author_id foreign key (author_id) references authors (id)
+        on delete cascade
+);

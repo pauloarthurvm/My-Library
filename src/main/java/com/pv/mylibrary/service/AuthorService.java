@@ -1,22 +1,29 @@
 package com.pv.mylibrary.service;
 
 import com.pv.mylibrary.dto.AuthorDto;
+import com.pv.mylibrary.dto.BookSummaryDto;
 import com.pv.mylibrary.entity.AuthorEntity;
+import com.pv.mylibrary.entity.BookEntity;
 import com.pv.mylibrary.repository.AuthorRepository;
+import com.pv.mylibrary.repository.BookRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class AuthorService {
 
     private final AuthorRepository authorRepository;
+    private final BookRepository bookRepository;
 
-    public AuthorService(AuthorRepository authorRepository) {
+    public AuthorService(AuthorRepository authorRepository, BookRepository bookRepository) {
         this.authorRepository = authorRepository;
+        this.bookRepository = bookRepository;
     }
 
     @Transactional(readOnly = true)
@@ -44,6 +51,13 @@ public class AuthorService {
     }
 
     private AuthorDto toDto(AuthorEntity authorEntity) {
-        return new AuthorDto(authorEntity.getId(), authorEntity.getFullname());
+        Set<BookSummaryDto> books = new HashSet<>();
+        authorEntity.getBooks().stream().forEach(b -> {
+            books.add(new BookSummaryDto(b.getId(), b.getTitle()));
+        });
+        return new AuthorDto(
+                authorEntity.getId(),
+                authorEntity.getFullname(),
+                books);
     }
 }

@@ -1,4 +1,9 @@
 package com.pv.mylibrary.dto;
 
-public record AuthorDto(Long id, String fullname) {
+import java.util.Set;
+
+public record AuthorDto(
+        Long id,
+        String fullname,
+        Set<BookSummaryDto> books) {
 }
