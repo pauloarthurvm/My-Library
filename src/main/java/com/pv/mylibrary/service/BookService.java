@@ -83,13 +83,21 @@ public class BookService {
                 return Optional.empty();
             }
         }
-
         BookEntity bookEntity = bookEntityOpt.get();
         bookEntity.setTitle(bookDto.title());
         bookEntity.setPublisherEntity(publisherEntityOpt.get());
         bookEntity.setAuthors(authorsOpt.stream()
                 .map(Optional::get).collect(Collectors.toSet()));
         return Optional.of(toDto(bookEntity));
+    }
+
+    @Transactional
+    public boolean deleteBookById(Long bookId) {
+        if(!bookRepository.existsById(bookId)) {
+            return false;
+        }
+        bookRepository.deleteById(bookId);
+        return true;
     }
 
     private BookDto toDto(BookEntity bookEntity) {

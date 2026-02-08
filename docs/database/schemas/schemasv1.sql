@@ -44,6 +44,9 @@ alter table if exists books(
     references publishers (id)
     on delete restrict);
 
+------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------
+
 -- Create a "Many to Many" relationship
 -- Called "Associative (junction) table" in SQL context
 -- A book may have many authors
