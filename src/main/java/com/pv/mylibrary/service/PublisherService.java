@@ -1,6 +1,7 @@
 package com.pv.mylibrary.service;
 
 import com.pv.mylibrary.dto.PublisherDto;
+import com.pv.mylibrary.entity.AuthorEntity;
 import com.pv.mylibrary.entity.PublisherEntity;
 import com.pv.mylibrary.repository.PublisherRepository;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,21 @@ public class PublisherService {
             return Optional.of(toDto(publisherEntity));
         }
         return Optional.empty();
+    }
+
+    @Transactional
+    public boolean deletePublisherById(Long publisherId) {
+        Optional<PublisherEntity> publisherEntityOpt = publisherRepository.findById(publisherId);
+        if (publisherEntityOpt.isEmpty()) {
+            System.out.println("Publisher does not exist");
+            return false;
+        }
+        if(publisherRepository.hasAnyBook(publisherId)) {
+            System.out.println("Can not erase the publisher - Publisher has books linked.");
+            return false;
+        }
+        publisherRepository.deleteById(publisherId);
+        return true;
     }
 
     private PublisherDto toDto(PublisherEntity publisherEntity) {
