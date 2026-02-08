@@ -2,6 +2,7 @@ package com.pv.mylibrary.controller;
 
 import com.pv.mylibrary.dto.AuthorDto;
 import com.pv.mylibrary.service.AuthorService;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +35,14 @@ public class AuthorController {
         Optional<AuthorDto> authorDtoUpdated = authorService.updateAuthor(authorDto);
         if(authorDtoUpdated.isPresent()) {
             return ResponseEntity.ok(authorDtoUpdated.get());
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteAuthor(@PathVariable(value = "id") Long authorId) {
+        if(authorService.deleteAuthor(authorId)) {
+            return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
     }

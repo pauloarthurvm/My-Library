@@ -50,6 +50,22 @@ public class AuthorService {
         return Optional.empty();
     }
 
+    @Transactional
+    public boolean deleteAuthor(Long authorId) {
+        Optional<AuthorEntity> authorEntityOpt = authorRepository.findById(authorId);
+        if (authorEntityOpt.isEmpty()) {
+            System.out.println("Author does not exist");
+            return false;
+        }
+//        if (authorEntityOpt.get().getBooks().size() > 0) {
+        if(authorRepository.hasAnyBook(authorId)) {
+            System.out.println("Can not erase the author - Author has books linked.");
+            return false;
+        }
+        authorRepository.deleteById(authorId);
+        return true;
+    }
+
     private AuthorDto toDto(AuthorEntity authorEntity) {
         Set<BookSummaryDto> books = new HashSet<>();
         authorEntity.getBooks().stream().forEach(b -> {
@@ -60,4 +76,5 @@ public class AuthorService {
                 authorEntity.getFullname(),
                 books);
     }
+
 }
