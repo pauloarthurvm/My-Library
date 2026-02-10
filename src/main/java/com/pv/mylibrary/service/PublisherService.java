@@ -4,6 +4,8 @@ import com.pv.mylibrary.dto.PublisherDto;
 import com.pv.mylibrary.entity.AuthorEntity;
 import com.pv.mylibrary.entity.PublisherEntity;
 import com.pv.mylibrary.repository.PublisherRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +16,8 @@ import java.util.stream.Collectors;
 @Service
 public class PublisherService {
 
+    Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private final PublisherRepository publisherRepository;
 
     public PublisherService(PublisherRepository publisherRepository) {
@@ -22,12 +26,14 @@ public class PublisherService {
 
     @Transactional(readOnly = true)
     public List<PublisherDto> getAllPublishers() {
+        logger.info("Get all publishers");
         return publisherRepository.findAll().stream()
                 .map(publisherEntity -> toDto(publisherEntity)).collect(Collectors.toList());
     }
 
     @Transactional
     public PublisherDto insertNewPublisher(PublisherDto publisherDto) {
+        logger.info("Insert new publisher: {}", publisherDto);
         PublisherEntity publisherEntity = new PublisherEntity();
         publisherEntity.setName(publisherDto.name());
         publisherEntity = publisherRepository.save(publisherEntity);
@@ -36,24 +42,27 @@ public class PublisherService {
 
     @Transactional
     public Optional<PublisherDto> updatePublisher(PublisherDto publisherDto) {
+        logger.info("Update a publisher - ID: {}", publisherDto.id());
         Optional<PublisherEntity> publisherEntityOpt = publisherRepository.findById(publisherDto.id());
         if(publisherEntityOpt.isPresent()) {
             PublisherEntity publisherEntity = publisherEntityOpt.get();
             publisherEntity.setName(publisherDto.name());
             return Optional.of(toDto(publisherEntity));
         }
+        logger.error("Could not find publisher");
         return Optional.empty();
     }
 
     @Transactional
     public boolean deletePublisherById(Long publisherId) {
+        logger.info("Delete a publisher - ID: {}", publisherId);
         Optional<PublisherEntity> publisherEntityOpt = publisherRepository.findById(publisherId);
         if (publisherEntityOpt.isEmpty()) {
-            System.out.println("Publisher does not exist");
+            logger.error("Publisher does not exist");
             return false;
         }
         if(publisherRepository.hasAnyBook(publisherId)) {
-            System.out.println("Can not erase the publisher - Publisher has books linked.");
+            logger.error("Can not erase the publisher - Publisher has books linked.");
             return false;
         }
         publisherRepository.deleteById(publisherId);
