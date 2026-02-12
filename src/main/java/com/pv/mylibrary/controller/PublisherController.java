@@ -42,12 +42,8 @@ public class PublisherController {
 
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> deletePublisher(@PathVariable(value = "id") Long publisherId) {
-
-        boolean deleted = publisherService.deletePublisherById(publisherId);
-        if (deleted) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        }
-        return ResponseEntity.notFound().build();
+        publisherService.deletePublisherById(publisherId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 }

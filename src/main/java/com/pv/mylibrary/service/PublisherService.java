@@ -3,6 +3,8 @@ package com.pv.mylibrary.service;
 import com.pv.mylibrary.dto.PublisherDto;
 import com.pv.mylibrary.entity.AuthorEntity;
 import com.pv.mylibrary.entity.PublisherEntity;
+import com.pv.mylibrary.exception.ConflictException;
+import com.pv.mylibrary.exception.ResourceNotFoundException;
 import com.pv.mylibrary.repository.PublisherRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,19 +56,19 @@ public class PublisherService {
     }
 
     @Transactional
-    public boolean deletePublisherById(Long publisherId) {
+    public void deletePublisherById(Long publisherId) {
         logger.info("Delete a publisher - ID: {}", publisherId);
         Optional<PublisherEntity> publisherEntityOpt = publisherRepository.findById(publisherId);
         if (publisherEntityOpt.isEmpty()) {
-            logger.error("Publisher does not exist");
-            return false;
+            logger.warn("Could not find publisher with ID - {}", publisherId);
+            throw new ResourceNotFoundException("Publisher not found.");
         }
         if(publisherRepository.hasAnyBook(publisherId)) {
-            logger.error("Can not erase the publisher - Publisher has books linked.");
-            return false;
+            logger.warn("Can not erase the publisher ID: - Publisher has books linked.", publisherId);
+            throw new ConflictException("Publisher has books linked");
         }
         publisherRepository.deleteById(publisherId);
-        return true;
+        return;
     }
 
     private PublisherDto toDto(PublisherEntity publisherEntity) {
