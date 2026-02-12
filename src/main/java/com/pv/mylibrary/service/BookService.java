@@ -2,10 +2,10 @@ package com.pv.mylibrary.service;
 
 import com.pv.mylibrary.dto.AuthorSummaryDto;
 import com.pv.mylibrary.dto.BookDto;
-import com.pv.mylibrary.dto.BookSummaryDto;
 import com.pv.mylibrary.entity.AuthorEntity;
 import com.pv.mylibrary.entity.BookEntity;
 import com.pv.mylibrary.entity.PublisherEntity;
+import com.pv.mylibrary.exception.ResourceNotFoundException;
 import com.pv.mylibrary.repository.AuthorRepository;
 import com.pv.mylibrary.repository.BookRepository;
 import com.pv.mylibrary.repository.PublisherRepository;
@@ -46,7 +46,7 @@ public class BookService {
     }
 
     @Transactional
-    public Optional<BookDto> insertNewBook(BookDto bookDto) {
+    public BookDto insertNewBook(BookDto bookDto) {
         logger.info("Insert new book: {}", bookDto);
         BookEntity entity = new BookEntity();
 
@@ -55,45 +55,45 @@ public class BookService {
                 .collect(Collectors.toList());
         for (Optional<AuthorEntity> a : authorsOpt) {
             if (a.isEmpty()) {
-                logger.error("Could not find an author.");
-                return Optional.empty();
+                logger.warn("Could not find an author.");
+                throw new ResourceNotFoundException("Could not fin an author.");
             }
         }
 
         Optional<PublisherEntity> publisherEntityOpt = publisherRepository.findById(bookDto.publisherId());
-        if(publisherEntityOpt.isPresent()) {
-            entity.setTitle(bookDto.title());
-            entity.setPublisherEntity(publisherEntityOpt.get());
-            entity.setAuthors(authorsOpt.stream()
-                    .map(Optional::get).collect(Collectors.toSet()));
-            BookEntity saved = bookRepository.save(entity);
-            logger.info("Book inserted successfully.");
-            return Optional.of(toDto(saved));
+        if(publisherEntityOpt.isEmpty()) {
+            logger.warn("Could not find publisher ID:{}.", bookDto.publisherId());
+            throw new ResourceNotFoundException(String.format("Could not find publisher ID:%d", bookDto.publisherId()));
         }
-        logger.error("Could not find publisher.");
-        return Optional.empty();
+        entity.setTitle(bookDto.title());
+        entity.setPublisherEntity(publisherEntityOpt.get());
+        entity.setAuthors(authorsOpt.stream()
+                .map(Optional::get).collect(Collectors.toSet()));
+        BookEntity saved = bookRepository.save(entity);
+        logger.info("Book inserted successfully.");
+        return toDto(saved);
     }
 
     @Transactional
-    public Optional<BookDto> updateBook(BookDto bookDto) {
+    public BookDto updateBook(BookDto bookDto) {
         logger.info("Update a book: {}", bookDto);
         Optional<BookEntity> bookEntityOpt = bookRepository.findById(bookDto.id());
         if(bookEntityOpt.isEmpty()) {
-            logger.error("Could not find book by id.");
-            return Optional.empty();
+            logger.warn("Could not find book ID:{}", bookDto.id());
+            throw new ResourceNotFoundException(String.format("Could not find book ID:%d.", bookDto.id()));
         }
         Optional<PublisherEntity> publisherEntityOpt = publisherRepository.findById(bookDto.publisherId());
         if(publisherEntityOpt.isEmpty()) {
-            logger.error("Could not find publisher.");
-            return Optional.empty();
+            logger.warn("Could not find publisher ID:{}.", bookDto.publisherId());
+            throw new ResourceNotFoundException(String.format("Could not find publisher ID:%d.", bookDto.publisherId()));
         }
         List<Optional<AuthorEntity>> authorsOpt = bookDto.authors().stream()
                 .map(a -> authorRepository.findById(a.id()))
                 .collect(Collectors.toList());
         for (Optional<AuthorEntity> a : authorsOpt) {
             if (a.isEmpty()) {
-                logger.error("Could not find an author.");
-                return Optional.empty();
+                logger.warn("Could not find an author.");
+                throw new ResourceNotFoundException("Could not find an Author.");
             }
         }
         BookEntity bookEntity = bookEntityOpt.get();
@@ -102,18 +102,17 @@ public class BookService {
         bookEntity.setAuthors(authorsOpt.stream()
                 .map(Optional::get).collect(Collectors.toSet()));
         logger.info("Book updated successfully.");
-        return Optional.of(toDto(bookEntity));
+        return toDto(bookEntity);
     }
 
     @Transactional
-    public boolean deleteBookById(Long bookId) {
+    public void deleteBookById(Long bookId) {
         if(!bookRepository.existsById(bookId)) {
-            logger.error("Could not find book by id.");
-            return false;
+            logger.warn("Could not find book ID:{}.", bookId);
+            throw new ResourceNotFoundException(String.format("Could not find book ID:%d.", bookId));
         }
         bookRepository.deleteById(bookId);
         logger.info("Book deleted successfully.");
-        return true;
     }
 
     private BookDto toDto(BookEntity bookEntity) {

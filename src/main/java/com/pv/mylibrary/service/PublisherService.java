@@ -64,7 +64,7 @@ public class PublisherService {
             throw new ResourceNotFoundException("Publisher not found.");
         }
         if(publisherRepository.hasAnyBook(publisherId)) {
-            logger.warn("Can not erase the publisher ID: - Publisher has books linked.", publisherId);
+            logger.warn("Can not erase the publisher ID: {} - Publisher has books linked.", publisherId);
             throw new ConflictException("Publisher has books linked");
         }
         publisherRepository.deleteById(publisherId);

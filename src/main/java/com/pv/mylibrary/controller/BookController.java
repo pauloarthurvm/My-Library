@@ -13,7 +13,7 @@ import java.util.Optional;
 @RequestMapping("/api/v1/books")
 public class BookController {
 
-    private BookService bookService;
+    private final BookService bookService;
 
     public BookController(BookService bookService) {
         this.bookService = bookService;
@@ -27,29 +27,20 @@ public class BookController {
 
     @PostMapping
     public ResponseEntity<BookDto> insertBookSave(@RequestBody BookDto bookDto) {
-        Optional<BookDto> bookDtoSavedOpt = bookService.insertNewBook(bookDto);
-        if(bookDtoSavedOpt.isPresent()) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(bookDtoSavedOpt.get());
-        }
-        return ResponseEntity.badRequest().build();
+        BookDto bookDtoSaved = bookService.insertNewBook(bookDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(bookDtoSaved);
     }
 
     @PutMapping()
     public ResponseEntity<BookDto> updateBook(@RequestBody BookDto bookDto) {
-        Optional<BookDto> bookDtoUpdated = bookService.updateBook(bookDto);
-        if(bookDtoUpdated.isPresent()) {
-            return ResponseEntity.ok(bookDtoUpdated.get());
-        }
-        return ResponseEntity.notFound().build();
+        BookDto bookDtoUpdated = bookService.updateBook(bookDto);
+        return ResponseEntity.ok(bookDtoUpdated);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBook(@PathVariable(value = "id") Long bookId) {
-        boolean deleted = bookService.deleteBookById(bookId);
-        if (deleted) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        }
-        return ResponseEntity.notFound().build();
+        bookService.deleteBookById(bookId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
 }

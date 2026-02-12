@@ -4,6 +4,8 @@ import com.pv.mylibrary.dto.AuthorDto;
 import com.pv.mylibrary.dto.BookSummaryDto;
 import com.pv.mylibrary.entity.AuthorEntity;
 import com.pv.mylibrary.entity.BookEntity;
+import com.pv.mylibrary.exception.ConflictException;
+import com.pv.mylibrary.exception.ResourceNotFoundException;
 import com.pv.mylibrary.repository.AuthorRepository;
 import com.pv.mylibrary.repository.BookRepository;
 import org.slf4j.Logger;
@@ -46,33 +48,32 @@ public class AuthorService {
     }
 
     @Transactional
-    public Optional<AuthorDto> updateAuthor(AuthorDto authorDto) {
+    public AuthorDto updateAuthor(AuthorDto authorDto) {
         logger.info("Update an author - ID: {}", authorDto.id());
         Optional<AuthorEntity> authorEntityOpt = authorRepository.findById(authorDto.id());
-        if(authorEntityOpt.isPresent()) {
-            AuthorEntity authorEntity = authorEntityOpt.get();
-            authorEntity.setFullname(authorDto.fullname());
-            return Optional.of(toDto(authorEntity));
+        if(authorEntityOpt.isEmpty()) {
+            logger.warn("Author not found - ID:{}", authorDto.id());
+            throw new ResourceNotFoundException(String.format("Author not found - ID: %d", authorDto.id()));
         }
-        logger.error("Author does not exist");
-        return Optional.empty();
+        AuthorEntity authorEntity = authorEntityOpt.get();
+        authorEntity.setFullname(authorDto.fullname());
+        return toDto(authorEntity);
     }
 
     @Transactional
-    public boolean deleteAuthor(Long authorId) {
+    public void deleteAuthor(Long authorId) {
         Optional<AuthorEntity> authorEntityOpt = authorRepository.findById(authorId);
         if (authorEntityOpt.isEmpty()) {
-            logger.error("Author does not exist");
-            System.out.println("Author does not exist");
-            return false;
+            logger.warn("Author not found - ID: {}", authorId);
+            throw new ResourceNotFoundException(String.format("Author not found - ID:%d", authorId));
         }
 //        if (authorEntityOpt.get().getBooks().size() > 0) {
         if(authorRepository.hasAnyBook(authorId)) {
-            logger.error("Can not erase the author - Author has books linked.");
-            return false;
+            logger.warn("Can not delete author ID {} - Author has books linked.", authorId);
+            throw new ConflictException(String.format("Can not delete author ID: %d - Author has books linked.", authorId));
         }
         authorRepository.deleteById(authorId);
-        return true;
+        return;
     }
 
     private AuthorDto toDto(AuthorEntity authorEntity) {
